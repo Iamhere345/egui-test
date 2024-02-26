@@ -2,13 +2,18 @@ use eframe::{run_native, App, NativeOptions};
 use eframe::egui;
 use eframe::epaint::{ImageDelta, ColorImage};
 
-#[derive(Default)]
-struct EframeApp;
+use std::time::Instant;
+
+struct EframeApp {
+    last_update: Instant,
+}
 
 impl EframeApp {
     fn new(cc: &eframe::CreationContext) -> Self {
 
-        Self::default()
+        Self {
+            last_update: Instant::now(),
+        }
     }
 }
 
@@ -21,7 +26,7 @@ impl App for EframeApp {
                     println!("click.");
                 }
 
-                ui.label("<- a button");
+                ui.label(format!("{} FPS", 1.0 / self.last_update.elapsed().as_secs_f64()));
             });
 
         });
@@ -56,6 +61,11 @@ impl App for EframeApp {
 
             
         });
+
+        self.last_update = Instant::now();
+
+        ctx.request_repaint();
+
     }
 }
 
