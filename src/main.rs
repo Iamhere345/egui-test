@@ -1,11 +1,12 @@
 use eframe::{run_native, App, NativeOptions};
-use eframe::egui;
+use eframe::egui::{self, Align2, Color32, TextureOptions, Vec2};
 use eframe::epaint::{ImageDelta, ColorImage};
 
 use std::time::Instant;
 
 struct EframeApp {
     last_update: Instant,
+    frame_inc: u8,
 }
 
 impl EframeApp {
@@ -13,6 +14,7 @@ impl EframeApp {
 
         Self {
             last_update: Instant::now(),
+            frame_inc: 0,
         }
     }
 }
@@ -40,6 +42,19 @@ impl App for EframeApp {
 
         });
 
+        egui::Window::new("Canvas")
+            .resizable(false)
+            .collapsible(false)
+            .anchor(Align2::CENTER_CENTER, [0.0, 0.0])
+            .show(ctx, |ui| {
+                let tex = ctx.load_texture("Image", ColorImage {
+                    size: [480, 480],
+                    pixels: vec![Color32::from_rgb(1 * self.frame_inc, 0, (1 * self.frame_inc) / 4); 480 * 480],
+                }, TextureOptions::NEAREST);
+
+                ui.image((tex.id(), Vec2 { x: 480.0, y: 480.0 }));
+            });
+
         egui::Window::new("Window").resizable(true).show(ctx, |ui| {
 
             ui.horizontal_top(|ui| {
@@ -62,6 +77,7 @@ impl App for EframeApp {
             
         });
 
+        self.frame_inc = self.frame_inc.overflowing_add(1).0;
         self.last_update = Instant::now();
 
         ctx.request_repaint();
